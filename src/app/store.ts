@@ -1,9 +1,11 @@
 import { configureStore, ThunkAction, Action } from '@reduxjs/toolkit';
-import counterReducer from '../features/counter/counterSlice';
+import taskReducer from '../features/tasks/tasksSlice';
+import modalReducer from '../features/modalBox/modalSlice';
 
 export const store = configureStore({
   reducer: {
-    counter: counterReducer,
+    tasks: taskReducer,
+    isModalBoxOpen: modalReducer
   },
 });
 

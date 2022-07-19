@@ -1,56 +1,110 @@
-import React from 'react';
-import logo from './logo.svg';
-import { Counter } from './features/counter/Counter';
+import React, { useState } from 'react';
+import { useAppDispatch, useAppSelector } from './app/hooks';
+import { list } from './features/tasks/tasksSlice';
+import { HeaderTable } from './features/headerTable/HeaderTable';
+import { Table } from './features/table/Table';
+import { ModalBox } from './features/modalBox/ModalBox';
+import { saveTask } from './features/tasks/tasksSlice';
 import './App.css';
 
 function App() {
+  const dispatch = useAppDispatch();
+
+  const listOfTasks = useAppSelector(list).list;
+
+  const initialState = {
+    task: '',
+    points: '',
+  };
+
+  const [values, setValues] = useState(initialState);
+
+  const onHandleChange = (e: React.MouseEvent) => {
+    const result = e.target as any;
+    const name = result.name;
+    const value = result.value;
+    const vals = (val: any) => ({ ...val, [name]: value });
+    setValues(vals);
+  };
+
+  const onSubmit = (e: React.MouseEvent) => {
+    e.preventDefault();
+
+    validateForm();
+  };
+
+  const onClearData = () => {
+    setValues(initialState);
+  };
+
+  const onAlert = (message: string) => {
+    alert(message);
+  };
+
+  const validateForm = () => {
+    if (values.task === '') {
+      return onAlert('El campo tareas no puede estar vacio.');
+    }
+    if (values.points === '') {
+      return onAlert('El campo puntos no puede estar vacio.');
+    }
+    if (listOfTasks.find((item: any) => item.task === values.task)) {
+      return onAlert('La tarea ya existe, intenta con otro nombre');
+    }
+    return onProcessData();
+  };
+
+  const onProcessData = () => {
+    dispatch(saveTask(values));
+
+    onClearData();
+  };
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <Counter />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <span>
-          <span>Learn </span>
-          <a
-            className="App-link"
-            href="https://reactjs.org/"
-            target="_blank"
-            rel="noopener noreferrer"
+    <div className='App'>
+      <ModalBox />
+      <div className='header-form'>
+        <form>
+          <input
+            onChange={(e: any) => onHandleChange(e)}
+            type='text'
+            name='task'
+            value={values.task}
+            placeholder='Agregar una tarea'
+          />
+          <select
+            name='points'
+            onChange={(e: any) => onHandleChange(e)}
+            value={values.points}
           >
-            React
-          </a>
-          <span>, </span>
-          <a
-            className="App-link"
-            href="https://redux.js.org/"
-            target="_blank"
-            rel="noopener noreferrer"
+            <option defaultValue='0'>Seleciona un valor</option>
+            <option value='1'>1</option>
+            <option value='2'>2</option>
+            <option value='3'>3</option>
+            <option value='5'>5</option>
+            <option value='8'>8</option>
+            <option value='13'>13</option>
+            <option value='34'>34</option>
+            <option value='55'>55</option>
+          </select>
+          <button
+            className='submit'
+            type='submit'
+            onClick={(e: React.MouseEvent) => onSubmit(e)}
           >
-            Redux
-          </a>
-          <span>, </span>
-          <a
-            className="App-link"
-            href="https://redux-toolkit.js.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Redux Toolkit
-          </a>
-          ,<span> and </span>
-          <a
-            className="App-link"
-            href="https://react-redux.js.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            React Redux
-          </a>
-        </span>
-      </header>
+            Agregar tarea
+          </button>
+        </form>
+      </div>
+      <div className='tableContainer'>
+        {listOfTasks.length === 0 ? (
+          <p>No existen tareas</p>
+        ) : (
+          <table>
+            <HeaderTable />
+            <Table data={listOfTasks} />
+          </table>
+        )}
+      </div>
     </div>
   );
 }
